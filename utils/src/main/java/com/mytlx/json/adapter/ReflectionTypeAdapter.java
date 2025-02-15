@@ -20,12 +20,6 @@ import java.lang.reflect.Parameter;
  */
 public class ReflectionTypeAdapter<T> extends TypeAdapter<T> {
 
-    // private final Class<T> typeClass;
-    //
-    // public ReflectionTypeAdapter(Class<T> typeClass) {
-    //     this.typeClass = typeClass;
-    // }
-
     @Override
     public void write(JsonWriter out, T value) throws IOException {
         if (value == null) {
