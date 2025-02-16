@@ -1,6 +1,6 @@
 package com.mytlx.reflection.practice._06_invoke_constructor;
 
-import com.mytlx.json.GsonUtils;
+import com.mytlx.utils.json.gson.GsonUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

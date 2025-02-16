@@ -1,4 +1,4 @@
-package com.mytlx.json;
+package com.mytlx.utils.json.gson;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -12,7 +12,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
-import com.mytlx.json.adapter.ReflectionTypeAdapter;
+import com.mytlx.utils.json.gson.adapter.ReflectionTypeAdapter;
 
 /**
  * Gson 工具类

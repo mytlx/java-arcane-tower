@@ -1,6 +1,6 @@
 package com.mytlx.reflection.practice._04_get_method;
 
-import com.mytlx.json.GsonUtils;
+import com.mytlx.utils.json.gson.GsonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
