@@ -1,6 +1,6 @@
 package com.mytlx.reflection.practice._08_reflection_array;
 
-import com.mytlx.utils.json.gson.GsonUtils;
+import com.mytlx.arcane.utils.json.gson.GsonUtils;
 
 import java.lang.reflect.Array;
 

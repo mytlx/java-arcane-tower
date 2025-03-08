@@ -1,4 +1,4 @@
-package com.mytlx.utils.json.gson.adapter;
+package com.mytlx.arcane.utils.json.gson.adapter;
 
 
 import com.google.gson.TypeAdapter;

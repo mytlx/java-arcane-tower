@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>basic-reflection-practice</module>
-        <module>utils</module>
+        <module>arcane-utils</module>
         <module>design-patterns</module>
         <module>arcane-snippets</module>
     </modules>

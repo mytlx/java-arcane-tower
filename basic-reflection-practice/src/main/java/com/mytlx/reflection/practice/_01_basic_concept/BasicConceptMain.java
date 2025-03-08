@@ -1,6 +1,6 @@
 package com.mytlx.reflection.practice._01_basic_concept;
 
-import com.mytlx.utils.json.gson.GsonUtils;
+import com.mytlx.arcane.utils.json.gson.GsonUtils;
 
 import java.lang.reflect.Constructor;
 
