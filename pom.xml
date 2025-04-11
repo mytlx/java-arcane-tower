@@ -13,6 +13,10 @@
         <module>arcane-utils</module>
         <module>design-patterns</module>
         <module>arcane-snippets</module>
+        <module>basic-juc-practice</module>
+        <module>jdk-features</module>
+        <module>spring-demo</module>
+        <module>dev-solutions</module>
     </modules>
 
     <properties>
@@ -24,11 +28,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter</artifactId>
-                <version>5.8.2</version>
-                <type>pom</type>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.4.3</version>
                 <scope>import</scope>
+                <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>
