@@ -1,4 +1,4 @@
-package com.mytlx.json;
+package com.mytlx.arcane.utils.json;
 
 
 import com.google.gson.JsonElement;

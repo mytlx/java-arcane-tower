@@ -48,6 +48,20 @@ public class LocalDateTimeUtils {
     }
 
     /**
+     * 获取当前时间戳（毫秒）
+     */
+    public static long getCurrentTimestampMillis() {
+        return Instant.now().toEpochMilli();
+    }
+
+    /**
+     * 获取当前时间戳（秒）
+     */
+    public static long getCurrentTimestampSeconds() {
+        return Instant.now().getEpochSecond();
+    }
+
+    /**
      * 获取当前日期时间（默认格式）
      */
     public static String now() {

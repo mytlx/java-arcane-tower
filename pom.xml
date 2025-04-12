@@ -17,6 +17,7 @@
         <module>jdk-features</module>
         <module>spring-projects-demo</module>
         <module>dev-solutions</module>
+        <module>dev-solutions/drilldown-statistics</module>
     </modules>
 
     <properties>
