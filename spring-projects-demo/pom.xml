@@ -9,15 +9,22 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jdk-features</artifactId>
+    <artifactId>spring-projects-demo</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>jdk-feature-jdk9</module>
+        <module>spring-demo</module>
+        <module>mybatis-plus-demo</module>
     </modules>
+
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <dependencies>
+
+
+    </dependencies>
 
 </project>

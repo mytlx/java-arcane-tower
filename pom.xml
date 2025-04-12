@@ -15,7 +15,7 @@
         <module>arcane-snippets</module>
         <module>basic-juc-practice</module>
         <module>jdk-features</module>
-        <module>spring-demo</module>
+        <module>spring-projects-demo</module>
         <module>dev-solutions</module>
     </modules>
 
@@ -33,6 +33,13 @@
                 <version>3.4.3</version>
                 <scope>import</scope>
                 <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-bom</artifactId>
+                <version>3.5.11</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
