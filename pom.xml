@@ -18,6 +18,7 @@
         <module>spring-projects-demo</module>
         <module>dev-solutions</module>
         <module>spring-ai</module>
+        <module>arcane-study</module>
     </modules>
 
     <properties>
@@ -63,6 +64,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.36</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
         </dependency>
 
     </dependencies>
