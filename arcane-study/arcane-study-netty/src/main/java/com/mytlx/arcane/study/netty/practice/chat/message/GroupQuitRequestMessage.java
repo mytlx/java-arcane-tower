@@ -3,11 +3,15 @@ package com.mytlx.arcane.study.netty.practice.chat.message;
 import lombok.Data;
 import lombok.ToString;
 
+import java.io.Serial;
+
 @Data
 @ToString(callSuper = true)
 public class GroupQuitRequestMessage extends Message {
-    private String groupName;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
+    private String groupName;
     private String username;
 
     public GroupQuitRequestMessage(String username, String groupName) {

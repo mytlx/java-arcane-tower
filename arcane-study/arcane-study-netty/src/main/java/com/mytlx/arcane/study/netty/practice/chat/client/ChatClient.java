@@ -3,6 +3,7 @@ package com.mytlx.arcane.study.netty.practice.chat.client;
 import com.mytlx.arcane.study.netty.practice.chat.message.*;
 import com.mytlx.arcane.study.netty.practice.chat.protocol.MessageCodecSharable;
 import com.mytlx.arcane.study.netty.practice.chat.protocol.ProtocolFrameDecoder;
+import com.mytlx.arcane.study.netty.practice.chat.server.session.SessionFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -46,7 +47,7 @@ public class ChatClient {
                 protected void initChannel(SocketChannel ch) throws Exception {
                     ch.pipeline()
                             .addLast(new ProtocolFrameDecoder())
-                            .addLast(loggingHandler)
+                            // .addLast(loggingHandler)
                             .addLast(msgCodec);
                     ch.pipeline().addLast("client handler", new ChannelInboundHandlerAdapter() {
                         @Override
@@ -94,16 +95,24 @@ public class ChatClient {
                                     String[] s = command.split(" ");
                                     switch (s[0]){
                                         case "send":
+                                            ctx.writeAndFlush(new ChatRequestMessage(username, s[1], s[2]));
                                             break;
                                         case "gsend":
+                                            ctx.writeAndFlush(new GroupChatRequestMessage(username, s[1], s[2]));
                                             break;
                                         case "gcreate":
+                                            Set<String> set = new HashSet<>(Arrays.asList(s[2].split(",")));
+                                            set.add(username); // 加入自己
+                                            ctx.writeAndFlush(new GroupCreateRequestMessage(s[1], set));
                                             break;
                                         case "gmembers":
+                                            ctx.writeAndFlush(new GroupMembersRequestMessage(s[1]));
                                             break;
                                         case "gjoin":
+                                            ctx.writeAndFlush(new GroupJoinRequestMessage(username, s[1]));
                                             break;
                                         case "gquit":
+                                            ctx.writeAndFlush(new GroupQuitRequestMessage(username, s[1]));
                                             break;
                                         case "quit":
                                             ctx.channel().close();
@@ -112,8 +121,6 @@ public class ChatClient {
                                 }
 
                             }, "system in").start();
-
-                            super.channelActive(ctx);
                         }
 
                         @Override
@@ -124,9 +131,13 @@ public class ChatClient {
                                     loginFlag.set(true);
                                 }
                                 latch.countDown();
+                            } else if (msg instanceof ChatResponseMessage resp) {
+                                if (resp.isSuccess()) {
+                                    log.info("收到来自[ {} ]的消息：{}", resp.getFrom(), resp.getContent());
+                                } else {
+                                    log.info("发送给[ {} ]消息失败：{}", resp.getTo(), resp.getMsg());
+                                }
                             }
-
-                            super.channelRead(ctx, msg);
                         }
                     });
                 }
