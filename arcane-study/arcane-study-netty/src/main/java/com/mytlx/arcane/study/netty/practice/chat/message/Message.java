@@ -56,5 +56,7 @@ public abstract class Message implements Serializable {
         messageClasses.put(GroupChatResponseMessage, GroupChatResponseMessage.class);
         messageClasses.put(GroupMembersRequestMessage, GroupMembersRequestMessage.class);
         messageClasses.put(GroupMembersResponseMessage, GroupMembersResponseMessage.class);
+        messageClasses.put(PingMessage, PingMessage.class);
+        // messageClasses.put(PongMessage, PongMessage.class);
     }
 }

@@ -102,7 +102,7 @@ public class ChatClient {
                                     password = scanner.nextLine();
                                 }
                                 // 构造消息对象
-                                LoginRequestMessage msg = new LoginRequestMessage(username, password, "");
+                                LoginRequestMessage msg = new LoginRequestMessage(username, password);
                                 // 发送消息
                                 ctx.writeAndFlush(msg);
 
