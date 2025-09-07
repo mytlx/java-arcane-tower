@@ -11,11 +11,11 @@ import java.util.Set;
 public interface GroupSession {
 
     /**
-     * 创建一个聊天组, 如果不存在才能创建成功, 否则返回 null
+     * 创建一个聊天组, 如果不存在才能创建成功
      *
      * @param name    组名
      * @param members 成员
-     * @return 成功时返回组对象, 失败返回 null
+     * @return 成功时返回 null 失败返回 group
      */
     Group createGroup(String name, Set<String> members);
 

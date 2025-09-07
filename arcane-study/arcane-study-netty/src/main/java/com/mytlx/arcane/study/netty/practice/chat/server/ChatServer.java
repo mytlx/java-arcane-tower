@@ -2,8 +2,7 @@ package com.mytlx.arcane.study.netty.practice.chat.server;
 
 import com.mytlx.arcane.study.netty.practice.chat.protocol.MessageCodecSharable;
 import com.mytlx.arcane.study.netty.practice.chat.protocol.ProtocolFrameDecoder;
-import com.mytlx.arcane.study.netty.practice.chat.server.handler.ChatRequestMessageHandler;
-import com.mytlx.arcane.study.netty.practice.chat.server.handler.LoginRequestMessageHandler;
+import com.mytlx.arcane.study.netty.practice.chat.server.handler.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -30,6 +29,9 @@ public class ChatServer {
         // business handler
         LoginRequestMessageHandler loginRequestMessageHandler = new LoginRequestMessageHandler();
         ChatRequestMessageHandler chatRequestMessageHandler = new ChatRequestMessageHandler();
+        GroupCreateRequestMessageHandler groupCreateRequestMessageHandler = new GroupCreateRequestMessageHandler();
+        GroupChatRequestMessageHandler groupChatRequestMessageHandler = new GroupChatRequestMessageHandler();
+        QuitHandler quitHandler = new QuitHandler();
 
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();
@@ -45,6 +47,9 @@ public class ChatServer {
                     ch.pipeline()
                             .addLast(loginRequestMessageHandler)
                             .addLast(chatRequestMessageHandler)
+                            .addLast(groupCreateRequestMessageHandler)
+                            .addLast(groupChatRequestMessageHandler)
+                            .addLast(quitHandler)
                     ;
                 }
             });
