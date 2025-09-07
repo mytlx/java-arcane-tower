@@ -46,29 +46,31 @@ public class ChatServer {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
 
-                    // 用来判断是不是 读空闲时间过长 或 写空闲时间过长
-                    // 5s内如果没有收到 channel 的数据，会触发一个事件 IdleState#READER_IDLE
-                    ch.pipeline().addLast(new IdleStateHandler(5, 0, 0));
-                    // ChannelDuplexHandler 可以同时作为入站和出站处理器
-                    ch.pipeline().addLast(new ChannelDuplexHandler() {
-                        /**
-                         * 用来触发特殊事件
-                         */
-                        @Override
-                        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-                            IdleStateEvent event = (IdleStateEvent) evt;
-                            // 触发了读空闲事件
-                            if (event.state() == IdleState.READER_IDLE) {
-                                log.debug("已经5s没有读到数据了");
-                            }
-
-                        }
-                    });
-
                     ch.pipeline()
                             .addLast(new ProtocolFrameDecoder())
                             .addLast(loggingHandler)
                             .addLast(msgCodec);
+
+                    // 用来判断是不是 读空闲时间过长 或 写空闲时间过长
+                    // 5s内如果没有收到 channel 的数据，会触发一个事件 IdleState#READER_IDLE
+                    ch.pipeline()
+                            .addLast(new IdleStateHandler(5, 0, 0))
+                            // ChannelDuplexHandler 可以同时作为入站和出站处理器
+                            .addLast(new ChannelDuplexHandler() {
+                                /**
+                                 * 用来触发特殊事件
+                                 */
+                                @Override
+                                public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+                                    IdleStateEvent event = (IdleStateEvent) evt;
+                                    // 触发了读空闲事件
+                                    if (event.state() == IdleState.READER_IDLE) {
+                                        log.debug("已经5s没有读到数据了");
+                                    }
+
+                                }
+                            });
+
                     ch.pipeline()
                             .addLast(loginRequestMessageHandler)
                             .addLast(chatRequestMessageHandler)
