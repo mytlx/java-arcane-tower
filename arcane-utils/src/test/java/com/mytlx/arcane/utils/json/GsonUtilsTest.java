@@ -136,7 +136,11 @@ public class GsonUtilsTest {
 
     @Test
     public void testAccessible() throws Exception {
-        TestClass testClass = new TestClass("field1", 2, "return value", new RuntimeException("msg"));
+        Exception cause1 = new IllegalArgumentException("第一个参数错误");
+        Exception cause2 = new IllegalArgumentException("第二个参数错误", cause1);
+        Exception ex = new RuntimeException("业务异常", cause2);
+
+        TestClass testClass = new TestClass("field1", 2, "return value", ex);
         assertDoesNotThrow(() -> GsonUtils.toJson(testClass));
         String json = GsonUtils.toJson(testClass);
         System.out.println(json);

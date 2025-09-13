@@ -41,7 +41,7 @@ public class ThrowableAdapterFactory implements TypeAdapterFactory {
                 out.value(t.getMessage());
 
                 Throwable cause = t.getCause();
-                if (cause != null && cause != t) {
+                if (cause != null) {
                     out.name("cause");
                     write(out, cause);
                 }
@@ -59,11 +59,11 @@ public class ThrowableAdapterFactory implements TypeAdapterFactory {
                 }
 
                 // stackTrace
-                out.name("stackTrace").beginArray();
-                for (StackTraceElement e : t.getStackTrace()) {
-                    out.value(e.toString());
-                }
-                out.endArray();
+                // out.name("stackTrace").beginArray();
+                // for (StackTraceElement e : t.getStackTrace()) {
+                //     out.value(e.toString());
+                // }
+                // out.endArray();
 
                 out.endObject();
             }
@@ -72,18 +72,43 @@ public class ThrowableAdapterFactory implements TypeAdapterFactory {
             public Throwable read(JsonReader in) throws IOException {
                 JsonElement element = JsonParser.parseReader(in);
                 if (element.isJsonNull()) return null;
-                JsonObject jsonObject = element.getAsJsonObject();
+                return read(element.getAsJsonObject());
+            }
+
+            private Throwable read(JsonObject jsonObject) {
                 String className = jsonObject.get("type").getAsString();  // 序列化时保存的实际类型
                 String message = jsonObject.get("message").getAsString();
 
+                // 递归反序列化 cause
+                Throwable cause = null;
+                if (jsonObject.has("cause") && !jsonObject.get("cause").isJsonNull()) {
+                    cause = read(jsonObject.getAsJsonObject("cause"));
+                }
+
                 try {
                     Class<?> clazz = Class.forName(className);
-                    Constructor<?> constructor = clazz.getConstructor(String.class);
-                    return (Throwable) constructor.newInstance(message);
+                    Throwable throwable;
+
+                    try {
+                        // 优先找 (String, Throwable) 构造
+                        Constructor<?> ctor = clazz.getConstructor(String.class, Throwable.class);
+                        throwable = (Throwable) ctor.newInstance(message, cause);
+                    } catch (NoSuchMethodException e) {
+                        // 如果没有，则用 (String) 构造
+                        Constructor<?> ctor = clazz.getConstructor(String.class);
+                        throwable = (Throwable) ctor.newInstance(message);
+
+                        // 如果有 cause，再手动设置
+                        if (cause != null) {
+                            throwable.initCause(cause);
+                        }
+                    }
+
+                    return throwable;
+
                 } catch (Exception e) {
                     throw new RuntimeException("Failed to deserialize throwable type", e);
                 }
-
             }
         };
         return adapter;
