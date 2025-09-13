@@ -3,6 +3,7 @@ package com.mytlx.arcane.utils.json.gson;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.mytlx.arcane.utils.json.gson.adapter.ReflectionTypeAdapterFactory;
+import com.mytlx.arcane.utils.json.gson.adapter.ThrowableAdapterFactory;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +33,38 @@ public class GsonUtils {
                 .setDateFormat("yyyy-MM-dd HH:mm:ss")
                 .serializeNulls()
                 .disableHtmlEscaping()
+                .registerTypeAdapterFactory(new ThrowableAdapterFactory())
                 .registerTypeAdapterFactory(new ReflectionTypeAdapterFactory())
+                // .registerTypeHierarchyAdapter(Throwable.class, new TypeAdapter<Throwable>() {
+                //     @Override
+                //     public void write(JsonWriter out, Throwable t) throws IOException {
+                //         if (t == null) {
+                //             out.nullValue();
+                //             return;
+                //         }
+                //         out.beginObject();
+                //         out.name("class").value(t.getClass().getName());
+                //         out.name("message").value(t.getMessage());
+                //         // stackTrace
+                //         out.name("stackTrace").beginArray();
+                //         for (StackTraceElement e : t.getStackTrace()) {
+                //             out.value(e.toString());
+                //         }
+                //         out.endArray();
+                //         // cause
+                //         if (t.getCause() != null && t.getCause() != t) {
+                //             out.name("cause");
+                //             write(out, t.getCause());
+                //         }
+                //         out.endObject();
+                //     }
+                //
+                //     @Override
+                //     public Throwable read(JsonReader in) throws IOException {
+                //         // 可以只反序列化 message 或返回 null
+                //         return null;
+                //     }
+                // })
                 .create();
     }
 

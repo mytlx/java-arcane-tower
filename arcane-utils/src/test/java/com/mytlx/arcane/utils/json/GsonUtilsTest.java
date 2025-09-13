@@ -9,6 +9,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * @since 2025-02-15 16:45
  */
 public class GsonUtilsTest {
-
 
     @Test
     public void toJson() {
@@ -79,7 +82,7 @@ public class GsonUtilsTest {
     @Test
     public void isValidJson() {
         String validJson = "{\"name\":\"John\",\"age\":30}";
-        String invalidJson = "{name:John,age:30}"; // 不正确的 JSON 格式
+        String invalidJson = "-{name:John,age:30}"; // 不正确的 JSON 格式
 
         assertTrue(GsonUtils.isValidJson(validJson), "Valid JSON should return true");
         assertFalse(GsonUtils.isValidJson(invalidJson), "Invalid JSON should return false");
@@ -107,6 +110,120 @@ public class GsonUtilsTest {
     static class Person {
         private String name;
         private int age;
+    }
+
+    @AllArgsConstructor
+    static class TestClass {
+        public String field1;
+        private int field2;
+
+        private Object returnValue;
+        private Exception exceptionValue;
+
+        public TestClass() {
+        }
+
+        public TestClass(String field1) {
+        }
+
+        public void method1() {
+        }
+
+        public int method2(String arg) {
+            return 0;
+        }
+    }
+
+    @Test
+    public void testAccessible() throws Exception {
+        TestClass testClass = new TestClass("field1", 2, "return value", new RuntimeException("msg"));
+        assertDoesNotThrow(() -> GsonUtils.toJson(testClass));
+        String json = GsonUtils.toJson(testClass);
+        System.out.println(json);
+
+        assertDoesNotThrow(() -> GsonUtils.fromJson(json, TestClass.class));
+        System.out.println(GsonUtils.fromJson(json, TestClass.class));
+    }
+
+    @Test
+    void testClassSerialization() {
+        Class<?> clazz = TestClass.class;
+        String json = GsonUtils.toJson(clazz);
+        System.out.println("json = " + json);
+        Class<?> deserialized = GsonUtils.fromJson(json, Class.class);
+        System.out.println("deserialized = " + deserialized);
+        assertEquals(clazz, deserialized);
+    }
+
+    @Test
+    void testClassArraySerialization() {
+        Class<?>[] classes = {TestClass.class, String.class};
+        String json = GsonUtils.toJson(classes);
+        Class<?>[] deserialized = GsonUtils.fromJson(json, Class[].class);
+        System.out.println("deserialized = " + Arrays.toString(deserialized));
+        assertArrayEquals(classes, deserialized);
+    }
+
+    @Test
+    void testConstructorSerialization() throws Exception {
+        Constructor<?> constructor = TestClass.class.getConstructor(String.class);
+        String json = GsonUtils.toJson(constructor);
+        Constructor<?> deserialized = GsonUtils.fromJson(json, Constructor.class);
+        System.out.println("deserialized.getName() = " + deserialized.getName());
+        System.out.println("deserialized.getParameterTypes() = " + Arrays.toString(deserialized.getParameterTypes()));
+        assertEquals(constructor.getName(), deserialized.getName());
+        assertArrayEquals(constructor.getParameterTypes(), deserialized.getParameterTypes());
+    }
+
+    @Test
+    void testConstructorArraySerialization() throws Exception {
+        Constructor<?>[] constructors = TestClass.class.getConstructors();
+        String json = GsonUtils.toJson(constructors);
+        Constructor<?>[] deserialized = GsonUtils.fromJson(json, Constructor[].class);
+        System.out.println("deserialized = " + Arrays.toString(deserialized));
+        assertEquals(constructors.length, deserialized.length);
+    }
+
+    @Test
+    void testMethodSerialization() throws Exception {
+        Method method = TestClass.class.getMethod("method2", String.class);
+        String json = GsonUtils.toJson(method);
+        Method deserialized = GsonUtils.fromJson(json, Method.class);
+        System.out.println("json = " + json);
+        System.out.println("deserialized.getParameterTypes() = " + Arrays.toString(deserialized.getParameterTypes()));
+        assertEquals(method.getName(), deserialized.getName());
+        assertArrayEquals(method.getParameterTypes(), deserialized.getParameterTypes());
+    }
+
+    @Test
+    void testMethodArraySerialization() {
+        Method[] methods = TestClass.class.getMethods();
+        String json = GsonUtils.toJson(methods);
+        System.out.println("json = " + json);
+        Method[] deserialized = GsonUtils.fromJson(json, Method[].class);
+        System.out.println("deserialized = " + Arrays.toString(deserialized));
+        assertEquals(methods.length, deserialized.length);
+    }
+
+    @Test
+    void testFieldSerialization() throws Exception {
+        Field field = TestClass.class.getDeclaredField("field2");
+        String json = GsonUtils.toJson(field);
+        System.out.println("json = " + json);
+        Field deserialized = GsonUtils.fromJson(json, Field.class);
+        System.out.println("deserialized = " + deserialized);
+        assertEquals(field.getName(), deserialized.getName());
+        assertEquals(field.getType(), deserialized.getType());
+    }
+
+    @Test
+    void testFieldArraySerialization() {
+        Field[] fields = TestClass.class.getDeclaredFields();
+        String json = GsonUtils.toJson(fields);
+        System.out.println("json = " + json);
+        Field[] deserialized = GsonUtils.fromJson(json, Field[].class);
+        System.out.println("deserialized = " + Arrays.toString(deserialized));
+        assertEquals(fields.length, deserialized.length);
     }
 
 }
