@@ -3,6 +3,7 @@ package com.mytlx.arcane.utils;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -62,6 +63,64 @@ public class YamlUtils {
             }
         }
         return value;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T get(String key, Class<T> type) {
+        Object value = get(key);
+        if (value == null) {
+            return null;
+        }
+        // 如果类型匹配直接返回
+        if (type.isInstance(value)) {
+            return (T) value;
+        }
+        // 基本类型处理
+        if (type == String.class) {
+            return (T) value.toString();
+        } else if (type == Integer.class || type == int.class) {
+            if (value instanceof Number) {
+                return (T) Integer.valueOf(((Number) value).intValue());
+            }
+            return (T) Integer.valueOf(value.toString());
+        } else if (type == Long.class || type == long.class) {
+            if (value instanceof Number) {
+                return (T) Long.valueOf(((Number) value).longValue());
+            }
+            return (T) Long.valueOf(value.toString());
+        } else if (type == Boolean.class || type == boolean.class) {
+            if (value instanceof Boolean) {
+                return (T) value;
+            }
+            return (T) Boolean.valueOf(value.toString());
+        }
+        // 如果是 Map/List 等，直接尝试强转
+        return (T) value;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <K, V> Map<K, V> getMap(String key, Class<K> keyType, Class<V> valueType) {
+        Object obj = get(key);
+        if (!(obj instanceof Map<?, ?> rawMap)) return null;
+
+        Map<K, V> result = new HashMap<>();
+        for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+            K mapKey = convert(entry.getKey(), keyType);
+            V mapValue = convert(entry.getValue(), valueType);
+            result.put(mapKey, mapValue);
+        }
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T convert(Object obj, Class<T> type) {
+        if (obj == null) return null;
+        if (type.isInstance(obj)) return (T) obj;
+        if (type == String.class) return (T) obj.toString();
+        if (type == Integer.class || type == int.class) return (T) Integer.valueOf(obj.toString());
+        if (type == Long.class || type == long.class) return (T) Long.valueOf(obj.toString());
+        if (type == Boolean.class || type == boolean.class) return (T) Boolean.valueOf(obj.toString());
+        return (T) obj;
     }
 
     /**
