@@ -30,6 +30,8 @@ public class GsonUtilsTest {
         Person person = new Person("John", 30);
         String json = GsonUtils.toJson(person);
         System.out.println(json); // 输出: {"name":"John","age":30}
+
+        System.out.println(GsonUtils.toJson(person.getClass()));
     }
 
     @Test
