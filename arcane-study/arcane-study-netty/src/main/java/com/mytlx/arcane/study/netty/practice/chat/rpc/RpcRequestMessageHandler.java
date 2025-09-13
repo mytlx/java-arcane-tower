@@ -8,7 +8,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -24,12 +23,14 @@ public class RpcRequestMessageHandler extends SimpleChannelInboundHandler<RpcReq
         resp.setSequenceId(msg.getSequenceId());
 
         try {
-            HelloService service = (HelloService) ServiceFactory.getService(Class.forName(msg.getInterfaceName()));
-            Method sayHello = service.getClass().getDeclaredMethod("sayHello", String.class);
-            Object invoke = sayHello.invoke(service, msg.getParameterValue());
+            Object service = ServiceFactory.getService(Class.forName(msg.getInterfaceName()));
+            Method method = service.getClass().getDeclaredMethod(msg.getMethodName(), msg.getParameterTypes());
+            Object invoke = method.invoke(service, msg.getParameterValue());
             resp.setReturnValue(invoke);
         } catch (Exception e) {
-            resp.setExceptionValue(e);
+            String message = e.getCause().getMessage();
+            System.out.println("message = " + message);
+            resp.setExceptionValue(new Exception("远程调用错误: " + message));
             e.printStackTrace();
         }
 

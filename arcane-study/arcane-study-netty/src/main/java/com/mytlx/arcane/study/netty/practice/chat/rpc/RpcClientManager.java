@@ -6,7 +6,6 @@ import com.mytlx.arcane.study.netty.practice.chat.protocol.ProtocolFrameDecoder;
 import com.mytlx.arcane.study.netty.practice.chat.protocol.SequenceIdGenerator;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -14,10 +13,9 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.DefaultPromise;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 /**
@@ -30,8 +28,8 @@ public class RpcClientManager {
 
     public static void main(String[] args) {
         HelloService helloService = getProxyService(HelloService.class);
-        helloService.sayHello("zhangsan");
-        helloService.sayHello("lisi");
+        System.out.println(helloService.sayHello("zhangsan"));
+        System.out.println(helloService.sayHello("lisi"));
     }
 
     @SuppressWarnings("unchecked")
@@ -41,8 +39,9 @@ public class RpcClientManager {
                 new Class[]{clazz},
                 (proxy, method, args) -> {
                     // 1. 将方法调用转换为消息对象
+                    int sequenceId = SequenceIdGenerator.next();
                     RpcRequestMessage rpcRequestMessage = new RpcRequestMessage(
-                            SequenceIdGenerator.next(),
+                            sequenceId,
                             clazz.getName(),
                             method.getName(),
                             method.getReturnType(),
@@ -51,7 +50,20 @@ public class RpcClientManager {
                     );
                     // 2. 将消息对象发送出去
                     getChannel().writeAndFlush(rpcRequestMessage);
-                    return null;
+
+                    // 3. 准备一个空的promise
+                    DefaultPromise<Object> promise = new DefaultPromise<>(getChannel().eventLoop());
+                    RpcResponseMessageHandler.PROMISE_MAP.put(sequenceId, promise);
+
+                    // 4. 等待 promise 结果
+                    promise.await();
+                    if (promise.isSuccess()) {
+                        // 调用正常
+                        return promise.getNow();
+                    } else {
+                        // 调用失败
+                        throw new RuntimeException(promise.cause());
+                    }
                 }
         );
     }
