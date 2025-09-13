@@ -1,2 +1,5 @@
 serializer:
   algorithm: GSON
+
+services:
+  com.mytlx.arcane.study.netty.practice.chat.rpc.HelloService: com.mytlx.arcane.study.netty.practice.chat.rpc.HelloServiceImpl

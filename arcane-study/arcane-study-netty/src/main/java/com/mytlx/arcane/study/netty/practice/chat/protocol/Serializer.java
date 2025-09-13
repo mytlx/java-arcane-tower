@@ -1,8 +1,10 @@
 package com.mytlx.arcane.study.netty.practice.chat.protocol;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mytlx.arcane.study.netty.practice.chat.message.Message;
 import com.mytlx.arcane.utils.YamlUtils;
+import com.mytlx.arcane.utils.json.gson.GsonUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -46,14 +48,15 @@ public interface Serializer {
         },
 
         GSON(1) {
+
             @Override
             public <T> T deserialize(Class<T> clazz, byte[] bytes) {
-                return new Gson().fromJson(new String(bytes, StandardCharsets.UTF_8), clazz);
+                return GsonUtils.fromJson(new String(bytes, StandardCharsets.UTF_8), clazz);
             }
 
             @Override
             public <T> byte[] serialize(T object) {
-                return new Gson().toJson(object).getBytes(StandardCharsets.UTF_8);
+                return GsonUtils.toJson(object).getBytes(StandardCharsets.UTF_8);
             }
         },
         ;
