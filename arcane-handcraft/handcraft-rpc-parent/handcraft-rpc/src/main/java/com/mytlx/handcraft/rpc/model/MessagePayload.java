@@ -31,7 +31,7 @@ public class MessagePayload implements Serializable {
 
     private Object payload;
 
-    public MessagePayload of(String clientId, MessageType messageType, Object payload) {
+    public static MessagePayload of(String clientId, MessageType messageType, Object payload) {
         MessagePayload messagePayload = new MessagePayload()
                 .setClientId(clientId)
                 .setMessageType(messageType);

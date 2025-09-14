@@ -1,8 +1,9 @@
 package com.mytlx.handcraft.rpc.client;
 
-import com.mytlx.handcraft.rpc.model.RemoteService;
-import com.mytlx.handcraft.rpc.model.RpcMethod;
-import com.mytlx.handcraft.rpc.model.RpcMethodDescriptor;
+import com.mytlx.handcraft.rpc.handler.JsonCallMessageEncoder;
+import com.mytlx.handcraft.rpc.handler.JsonMessageDecoder;
+import com.mytlx.handcraft.rpc.handler.RpcClientMessageHandler;
+import com.mytlx.handcraft.rpc.model.*;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -13,16 +14,23 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author TLX
@@ -30,9 +38,11 @@ import java.util.*;
  * @since 2025-09-13 16:45:48
  */
 @Slf4j
-public class RpcClient implements SmartInitializingSingleton {
+public class RpcClient implements SmartInitializingSingleton, ApplicationContextAware {
 
     private final NioEventLoopGroup worker = new NioEventLoopGroup();
+
+    private ApplicationContext applicationContext;
 
     @Setter
     @Getter
@@ -49,6 +59,8 @@ public class RpcClient implements SmartInitializingSingleton {
     private final Map<String, Map<String, RpcMethodDescriptor>> classMethodDescMap = new HashMap<>();
     // methodId -> method
     private final Map<String, Method> reflectMethodMap = new HashMap<>();
+    // requestId -> future<response>
+    private final Map<String, CompletableFuture<MessagePayload.RpcResponse>> requestFutureMap = new ConcurrentHashMap<>();
 
     @Value("${handcraft.rpc.server.host}")
     private String host;
@@ -64,12 +76,19 @@ public class RpcClient implements SmartInitializingSingleton {
 
     public void connect() {
         try {
+            RpcClientMessageHandler rpcClientMessageHandler = new RpcClientMessageHandler(this);
+
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(worker)
                     .channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
+                            ch.pipeline()
+                                    .addLast(new JsonCallMessageEncoder())
+                                    .addLast(new JsonMessageDecoder())
+                                    .addLast(rpcClientMessageHandler)
+                            ;
 
                         }
                     });
@@ -90,11 +109,101 @@ public class RpcClient implements SmartInitializingSingleton {
         } finally {
             worker.shutdownGracefully();
         }
-
     }
 
     public void reconnect() {
 
+    }
+
+    public void handleRequest(MessagePayload.RpcResponse response) {
+        String requestId = response.getRequestId();
+        CompletableFuture<MessagePayload.RpcResponse> future = requestFutureMap.get(requestId);
+        future.complete(response);
+    }
+
+    public void handleResponse(MessagePayload.RpcRequest request) {
+        Class<?> requestClazz = null;
+        try {
+            // interface: BookingService
+            requestClazz = Class.forName(request.getRequestClassName());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        // implementation class: BookingServiceImpl
+        Map<String, ?> beans = applicationContext.getBeansOfType(requestClazz);
+
+        if (beans.size() > 1) {
+            log.error("more than one bean of type: {}", requestClazz);
+            throw new RuntimeException("more than one bean of type: " + requestClazz);
+        }
+
+        // 实现类的对象，真正的服务提供者
+        Object requestClassBean = beans.values().iterator().next();
+
+        String className = requestClassBean.getClass().getName();
+        Map<String, RpcMethodDescriptor> methodMdMap = classMethodDescMap.get(className);
+
+        String methodId = RpcMethodDescriptor.generateMethodId(
+                request.getRequestMethodSimpleName(), request.getParameterTypes(), request.getReturnValueType());
+        RpcMethodDescriptor md = methodMdMap.get(methodId);
+        if (md == null) {
+            throw new RuntimeException("no such method: " + methodId);
+        }
+
+        // tlxTODO: validate method
+        Method method = reflectMethodMap.get(methodId);
+        Object result = null;
+        try {
+            result = method.invoke(requestClassBean, request.getParameters());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+
+        MessagePayload response = new MessagePayload()
+                .setClientId(clientId)
+                .setMessageType(MessageType.RESPONSE)
+                .setPayload(
+                        new MessagePayload.RpcResponse()
+                                .setRequestId(request.getRequestId())
+                                .setReturnValue(result)
+                );
+        channel.writeAndFlush(response);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getProxy(Class<T> clazz, String requestClientId) {
+        return (T) Proxy.newProxyInstance(
+                Thread.currentThread().getContextClassLoader(),
+                new Class[]{clazz},
+                (proxy, method, args) -> {
+                    String requestId = UUID.randomUUID().toString();
+                    MessagePayload msg = new MessagePayload()
+                            .setClientId(clientId)
+                            .setMessageType(MessageType.CALL)
+                            .setPayload(
+                                    new MessagePayload.RpcRequest()
+                                            .setRequestClientId(requestClientId)
+                                            .setRequestId(requestId)
+                                            .setRequestMethodSimpleName(method.getName())
+                                            .setRequestClassName(method.getDeclaringClass().getName())
+                                            .setReturnValueType(method.getReturnType().getName())
+                                            .setParameterTypes(Arrays.stream(method.getParameterTypes()).map(Class::getSimpleName).toArray(String[]::new))
+                                            .setParameters(args)
+                            );
+
+                    CompletableFuture<MessagePayload.RpcResponse> future = new CompletableFuture<>();
+                    requestFutureMap.put(requestId, future);
+                    channel.writeAndFlush(msg);
+
+                    MessagePayload.RpcResponse response = future.get();
+
+                    requestFutureMap.remove(requestId);
+
+                    return response;
+                }
+        );
     }
 
     @Override
@@ -133,6 +242,10 @@ public class RpcClient implements SmartInitializingSingleton {
                 }
             }
         }
+    }
 
+    @Override
+    public void setApplicationContext(@NonNull ApplicationContext ctx) throws BeansException {
+        this.applicationContext = ctx;
     }
 }

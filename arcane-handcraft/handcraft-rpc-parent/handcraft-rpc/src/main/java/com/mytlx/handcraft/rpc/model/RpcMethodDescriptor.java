@@ -51,4 +51,18 @@ public class RpcMethodDescriptor {
         return md;
     }
 
+    public static String generateMethodId(String methodName, String[] parameterTypes, String returnType) {
+        String methodId = String.join(".", methodName, String.valueOf(parameterTypes.length));
+
+        for (String type : parameterTypes) {
+            methodId = String.join(".", methodId, type);
+        }
+
+        if (returnType != null) {
+            methodId = String.join(".", methodId, returnType);
+        }
+
+        return methodId;
+    }
+
 }
