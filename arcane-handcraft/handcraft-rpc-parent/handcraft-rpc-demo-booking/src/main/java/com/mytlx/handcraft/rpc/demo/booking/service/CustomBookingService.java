@@ -1,4 +1,4 @@
-package com.mytlx.handcraft.rpc.sample.booking.service;
+package com.mytlx.handcraft.rpc.demo.booking.service;
 
 /**
  * @author TLX

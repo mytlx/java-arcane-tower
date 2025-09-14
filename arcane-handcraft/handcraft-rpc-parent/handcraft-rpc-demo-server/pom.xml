@@ -9,7 +9,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>handcraft-rpc-sample-booking</artifactId>
+    <artifactId>handcraft-rpc-demo-server</artifactId>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -18,11 +18,14 @@
     </properties>
 
     <dependencies>
+
         <dependency>
             <groupId>com.mytlx</groupId>
             <artifactId>handcraft-rpc</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+
+
     </dependencies>
 
 </project>

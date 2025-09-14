@@ -13,6 +13,9 @@
     <packaging>pom</packaging>
     <modules>
         <module>handcraft-rpc</module>
+        <module>handcraft-rpc-demo-booking</module>
+        <module>handcraft-rpc-demo-server</module>
+        <module>handcraft-rpc-demo-user</module>
     </modules>
 
     <properties>
