@@ -49,4 +49,10 @@ public class ClientSessionManager {
     public static void deleteRequest(final String requestId) {
         REQUEST_ID_MSG_MAP.remove(requestId);
     }
+
+    public static void clearByClientId(final String clientId) {
+        CLIENT_ID_CHANNEL_MAP.remove(clientId);
+
+        REQUEST_ID_MSG_MAP.entrySet().removeIf(entry -> clientId.equals(entry.getValue().getClientId()));
+    }
 }

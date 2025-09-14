@@ -96,6 +96,8 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
                     .addListener((ChannelFutureListener) future -> {
                         if (future.isSuccess()) {
                             this.channel = future.channel();
+                            // 连接成功，发送注册消息
+                            sendRegistrationRequest();
                         } else {
                             log.error("Failed to connect to server", future.cause());
                             reconnect();
@@ -113,6 +115,13 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
 
     public void reconnect() {
 
+    }
+
+    public void sendRegistrationRequest() {
+        MessagePayload messagePayload = new MessagePayload()
+                .setClientId(clientId)
+                .setMessageType(MessageType.REGISTER);
+        channel.writeAndFlush(messagePayload);
     }
 
     public void handleRequest(MessagePayload.RpcResponse response) {

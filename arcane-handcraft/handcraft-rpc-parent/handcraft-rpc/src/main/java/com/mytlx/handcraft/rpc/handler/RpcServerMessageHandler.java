@@ -6,6 +6,7 @@ import com.mytlx.handcraft.rpc.server.ClientSessionManager;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.AttributeKey;
 
 /**
  * @author TLX
@@ -41,8 +42,19 @@ public class RpcServerMessageHandler extends SimpleChannelInboundHandler<Message
         }
     }
 
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        // 断开连接时，清理session
+        Object clientIdObj = ctx.channel().attr(AttributeKey.valueOf("clientId")).get();
+        if (clientIdObj != null) {
+            ClientSessionManager.clearByClientId(clientIdObj.toString());
+        }
+    }
+
     private void registerClientIntoSession(MessagePayload msg, Channel channel) {
         ClientSessionManager.register(msg.getClientId(), channel);
+        // 注册时保存 clientId，用于断开后的清理工作
+        channel.attr(AttributeKey.valueOf("clientId")).set(msg.getClientId());
     }
 
     private void forwardRequestToClient(MessagePayload msg, Channel channel) {
