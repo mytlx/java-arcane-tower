@@ -71,7 +71,7 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
     @PostConstruct
     public void init() {
         log.info("rpc client init");
-        // new Thread(this::connect).start();
+        new Thread(this::connect).start();
     }
 
     public void connect() {
@@ -95,6 +95,7 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
             ChannelFuture cf = bootstrap.connect(host, port)
                     .addListener((ChannelFutureListener) future -> {
                         if (future.isSuccess()) {
+                            log.info("client id: {} 连接成功", clientId);
                             this.channel = future.channel();
                             // 连接成功，发送注册消息
                             sendRegistrationRequest();
@@ -106,7 +107,7 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
 
             cf.channel().closeFuture().sync();
         } catch (Exception e) {
-            log.error("Failed to connect to server", e);
+            log.error("Failed to connect to rpc server", e);
             throw new RuntimeException(e);
         } finally {
             worker.shutdownGracefully();

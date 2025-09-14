@@ -11,6 +11,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
  */
 @Slf4j
 @Data
+@Accessors(chain = true)
 public class RpcServer {
 
     @Value("${handcraft.rpc.server.port}")
@@ -58,10 +60,10 @@ public class RpcServer {
                         }
                     });
             ChannelFuture channelFuture = serverBootstrap.bind(port).sync();
-            log.info("Server started on port {}", port);
+            log.info("RPC server started on port {}", port);
             channelFuture.channel().closeFuture().sync();
         } catch (Exception e) {
-            log.error("Server start error", e);
+            log.error("RPC Server start error", e);
             throw new RuntimeException(e);
         } finally {
             boss.shutdownGracefully();

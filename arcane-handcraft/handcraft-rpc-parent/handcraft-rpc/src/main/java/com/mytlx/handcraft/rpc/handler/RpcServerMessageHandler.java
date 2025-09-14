@@ -7,12 +7,14 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author TLX
  * @version 1.0.0
  * @since 2025-09-13 20:16:59
  */
+@Slf4j
 public class RpcServerMessageHandler extends SimpleChannelInboundHandler<MessagePayload> {
 
     @Override
@@ -52,6 +54,7 @@ public class RpcServerMessageHandler extends SimpleChannelInboundHandler<Message
     }
 
     private void registerClientIntoSession(MessagePayload msg, Channel channel) {
+        log.info("client id: {}, is now registering with netty server", msg.getClientId());
         ClientSessionManager.register(msg.getClientId(), channel);
         // 注册时保存 clientId，用于断开后的清理工作
         channel.attr(AttributeKey.valueOf("clientId")).set(msg.getClientId());
