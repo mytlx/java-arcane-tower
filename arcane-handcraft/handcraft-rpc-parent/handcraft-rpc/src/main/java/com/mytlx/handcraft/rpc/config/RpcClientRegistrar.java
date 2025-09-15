@@ -7,6 +7,7 @@ import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.lang.NonNull;
 
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class RpcClientRegistrar implements ImportBeanDefinitionRegistrar {
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata metadata,
-                                        BeanDefinitionRegistry registry, BeanNameGenerator generator) {
+                                        @NonNull BeanDefinitionRegistry registry, @NonNull BeanNameGenerator generator) {
         Map<String, Object> annotationAttributes = metadata.getAnnotationAttributes(EnableRpcClient.class.getName());
         if (annotationAttributes != null) {
             String clientId = (String) annotationAttributes.get("clientId");

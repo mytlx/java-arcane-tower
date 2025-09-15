@@ -16,6 +16,8 @@ public enum MessageTypeEnum {
     FORWARD(3),
     RESPONSE(4),
 
+    HEARTBEAT(10),
+
     UNKNOWN(-1);
 
     ;

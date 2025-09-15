@@ -40,7 +40,7 @@ public class JsonMessageDecoder extends ByteToMessageDecoder {
         JSONObject payload = (JSONObject) messagePayload.getPayload();
 
         switch (MessageTypeEnum.getByCode(messageType)) {
-            case REGISTER -> messagePayload.setPayload(null);
+            case REGISTER, HEARTBEAT -> messagePayload.setPayload(null);
             case CALL, FORWARD -> {
                 MessagePayload.RpcRequest req = payload.toJavaObject(MessagePayload.RpcRequest.class);
 

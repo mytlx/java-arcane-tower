@@ -1,5 +1,6 @@
 package com.mytlx.handcraft.rpc.client;
 
+import com.mytlx.handcraft.rpc.handler.ClientHeartbeatHandler;
 import com.mytlx.handcraft.rpc.handler.JsonCallMessageEncoder;
 import com.mytlx.handcraft.rpc.handler.JsonMessageDecoder;
 import com.mytlx.handcraft.rpc.handler.RpcClientMessageHandler;
@@ -10,6 +11,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.NonNull;
@@ -76,6 +78,7 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
     public void connect() {
         try {
             RpcClientMessageHandler rpcClientMessageHandler = new RpcClientMessageHandler(this);
+            ClientHeartbeatHandler clientHeartbeatHandler = new ClientHeartbeatHandler(this);
 
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(worker)
@@ -87,6 +90,8 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
                                     .addLast(new LoggingHandler())
                                     .addLast(new JsonCallMessageEncoder())
                                     .addLast(new JsonMessageDecoder())
+                                    .addLast(new IdleStateHandler(0, 5, 0))
+                                    .addLast(clientHeartbeatHandler)
                                     .addLast(rpcClientMessageHandler)
                             ;
                             ch.pipeline().addLast(new ChannelDuplexHandler() {
@@ -94,8 +99,8 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
                                 public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
                                     promise.addListener(future -> {
                                         if (!future.isSuccess()) {
-                                            System.err.println("消息发送失败: " + msg);
-                                            future.cause().printStackTrace();
+                                            log.error("消息发送失败: {}", msg);
+                                            log.error(future.cause().getMessage(), future.cause());
                                         }
                                     });
                                     super.write(ctx, msg, promise);
@@ -126,7 +131,7 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
     }
 
     public void reconnect() {
-
+        worker.schedule(RpcClient.this::connect, 5, TimeUnit.SECONDS);
     }
 
     public void sendRegistrationRequest() {

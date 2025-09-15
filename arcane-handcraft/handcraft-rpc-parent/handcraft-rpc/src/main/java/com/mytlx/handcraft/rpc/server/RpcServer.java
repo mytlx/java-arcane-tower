@@ -3,12 +3,14 @@ package com.mytlx.handcraft.rpc.server;
 import com.mytlx.handcraft.rpc.handler.JsonCallMessageEncoder;
 import com.mytlx.handcraft.rpc.handler.JsonMessageDecoder;
 import com.mytlx.handcraft.rpc.handler.RpcServerMessageHandler;
+import com.mytlx.handcraft.rpc.handler.ServerHeartbeatHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +56,8 @@ public class RpcServer {
                                     .addLast(new LoggingHandler())
                                     .addLast(new JsonMessageDecoder())
                                     .addLast(new JsonCallMessageEncoder())
+                                    .addLast(new IdleStateHandler(10, 0, 0))
+                                    .addLast(new ServerHeartbeatHandler())
                                     .addLast(new RpcServerMessageHandler())
 
                             ;
