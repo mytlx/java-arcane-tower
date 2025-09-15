@@ -16,6 +16,6 @@ public class MessageTypeDeserializer implements ObjectDeserializer {
     @Override
     public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
         String name = parser.parseObject(String.class);
-        return (T) MessageType.valueOf(name);
+        return (T) MessageTypeEnum.valueOf(name);
     }
 }

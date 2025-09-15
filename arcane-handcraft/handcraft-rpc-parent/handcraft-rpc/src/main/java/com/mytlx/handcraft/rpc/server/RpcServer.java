@@ -4,12 +4,11 @@ import com.mytlx.handcraft.rpc.handler.JsonCallMessageEncoder;
 import com.mytlx.handcraft.rpc.handler.JsonMessageDecoder;
 import com.mytlx.handcraft.rpc.handler.RpcServerMessageHandler;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LoggingHandler;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -52,11 +51,25 @@ public class RpcServer {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline()
+                                    .addLast(new LoggingHandler())
                                     .addLast(new JsonMessageDecoder())
                                     .addLast(new JsonCallMessageEncoder())
                                     .addLast(new RpcServerMessageHandler())
 
                             ;
+
+                            ch.pipeline().addLast(new ChannelDuplexHandler() {
+                                @Override
+                                public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+                                    promise.addListener(future -> {
+                                        if (!future.isSuccess()) {
+                                            System.err.println("消息发送失败: " + msg);
+                                            future.cause().printStackTrace();
+                                        }
+                                    });
+                                    super.write(ctx, msg, promise);
+                                }
+                            });
                         }
                     });
             ChannelFuture channelFuture = serverBootstrap.bind(port).sync();

@@ -1,5 +1,6 @@
 package com.mytlx.handcraft.rpc.demo.booking.service;
 
+import com.mytlx.handcraft.rpc.demo.common.service.BookingDetailService;
 import com.mytlx.handcraft.rpc.model.RpcMethod;
 import org.springframework.stereotype.Component;
 

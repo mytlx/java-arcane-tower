@@ -16,6 +16,7 @@
         <module>handcraft-rpc-demo-booking</module>
         <module>handcraft-rpc-demo-server</module>
         <module>handcraft-rpc-demo-user</module>
+        <module>handcraft-rpc-demo-common</module>
     </modules>
 
     <properties>

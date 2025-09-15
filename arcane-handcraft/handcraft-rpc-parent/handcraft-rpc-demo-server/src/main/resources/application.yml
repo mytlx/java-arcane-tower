@@ -1,6 +1,10 @@
 server:
   port: 8000
 
+logging:
+  level:
+    com.mytlx.handcraft: DEBUG
+
 handcraft:
   rpc:
     server:

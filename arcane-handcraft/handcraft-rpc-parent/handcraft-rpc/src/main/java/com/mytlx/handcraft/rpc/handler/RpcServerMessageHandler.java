@@ -1,7 +1,7 @@
 package com.mytlx.handcraft.rpc.handler;
 
 import com.mytlx.handcraft.rpc.model.MessagePayload;
-import com.mytlx.handcraft.rpc.model.MessageType;
+import com.mytlx.handcraft.rpc.model.MessageTypeEnum;
 import com.mytlx.handcraft.rpc.server.ClientSessionManager;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -19,9 +19,9 @@ public class RpcServerMessageHandler extends SimpleChannelInboundHandler<Message
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MessagePayload msg) throws Exception {
-        MessageType messageType = msg.getMessageType();
+        MessageTypeEnum messageTypeEnum = msg.getMessageType();
 
-        switch (messageType) {
+        switch (messageTypeEnum) {
             // register: save client info
             case REGISTER -> registerClientIntoSession(msg, ctx.channel());
             // call: RpcRequest info forward to other service
@@ -62,7 +62,7 @@ public class RpcServerMessageHandler extends SimpleChannelInboundHandler<Message
 
     private void forwardRequestToClient(MessagePayload msg, Channel channel) {
         ClientSessionManager.putRequest(msg);
-        msg.setMessageType(MessageType.FORWARD);
+        msg.setMessageType(MessageTypeEnum.FORWARD);
         channel.writeAndFlush(msg);
     }
 
@@ -71,7 +71,7 @@ public class RpcServerMessageHandler extends SimpleChannelInboundHandler<Message
         MessagePayload request = ClientSessionManager.getRequest(response.getRequestId());
         // 请求方的channel
         Channel channel = ClientSessionManager.getChannel(request.getClientId());
-        channel.writeAndFlush(response);
+        channel.writeAndFlush(msg);
     }
 
 

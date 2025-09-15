@@ -27,23 +27,9 @@ public class MessagePayload implements Serializable {
     private String clientId;
 
     @JSONField(serializeUsing = MessageTypeSerializer.class, deserializeUsing = MessageTypeDeserializer.class)
-    private MessageType messageType;
+    private MessageTypeEnum messageType;
 
     private Object payload;
-
-    public static MessagePayload of(String clientId, MessageType messageType, Object payload) {
-        MessagePayload messagePayload = new MessagePayload()
-                .setClientId(clientId)
-                .setMessageType(messageType);
-
-        // tlxTODO:
-        if (messageType == MessageType.CALL) {
-            messagePayload.setPayload(new MessagePayload.RpcRequest());
-        } else if (messageType == MessageType.RESPONSE) {
-            messagePayload.setPayload(new MessagePayload.RpcResponse());
-        }
-        return messagePayload;
-    }
 
     @NoArgsConstructor
     @Data

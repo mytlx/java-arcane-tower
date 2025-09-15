@@ -35,10 +35,10 @@ public class RpcClientMessageHandler extends SimpleChannelInboundHandler<Message
     }
 
     private void handleRequest(MessagePayload msg) {
-        rpcClient.handleRequest(((MessagePayload.RpcResponse) msg.getPayload()));
+        rpcClient.handleRequest(((MessagePayload.RpcRequest) msg.getPayload()));
     }
 
     private void handleResponse(MessagePayload msg) {
-        rpcClient.handleResponse(((MessagePayload.RpcRequest) msg.getPayload()));
+        rpcClient.handleResponse(((MessagePayload.RpcResponse) msg.getPayload()));
     }
 }

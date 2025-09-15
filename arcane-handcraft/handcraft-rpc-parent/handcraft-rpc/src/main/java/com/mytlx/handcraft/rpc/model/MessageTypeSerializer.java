@@ -18,8 +18,8 @@ public class MessageTypeSerializer implements ObjectSerializer {
             serializer.writeNull();
             return;
         }
-        if (object instanceof MessageType messageType) {
-            serializer.write(messageType.name());
+        if (object instanceof MessageTypeEnum messageTypeEnum) {
+            serializer.write(messageTypeEnum.name());
         }
     }
 }

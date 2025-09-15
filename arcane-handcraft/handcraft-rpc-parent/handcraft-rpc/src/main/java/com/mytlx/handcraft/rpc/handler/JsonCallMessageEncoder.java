@@ -16,7 +16,7 @@ public class JsonCallMessageEncoder extends MessageToByteEncoder<MessagePayload>
     protected void encode(ChannelHandlerContext ctx, MessagePayload msg, ByteBuf byteBuf) throws Exception {
 
         // 1B：message type
-        byteBuf.writeByte(msg.getMessageType().ordinal());
+        byteBuf.writeByte(msg.getMessageType().getCode());
 
         // 4B: message body length
         byte[] msgBytes = JSON.toJSONBytes(msg);

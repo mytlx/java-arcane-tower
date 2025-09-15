@@ -1,4 +1,4 @@
-package com.mytlx.handcraft.rpc.demo.booking.service;
+package com.mytlx.handcraft.rpc.demo.common.service;
 
 import com.mytlx.handcraft.rpc.model.RemoteService;
 

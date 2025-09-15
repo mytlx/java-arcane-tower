@@ -5,13 +5,11 @@ import com.mytlx.handcraft.rpc.handler.JsonMessageDecoder;
 import com.mytlx.handcraft.rpc.handler.RpcClientMessageHandler;
 import com.mytlx.handcraft.rpc.model.*;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelInitializer;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.logging.LoggingHandler;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.NonNull;
@@ -31,6 +29,7 @@ import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author TLX
@@ -85,11 +84,23 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline()
+                                    .addLast(new LoggingHandler())
                                     .addLast(new JsonCallMessageEncoder())
                                     .addLast(new JsonMessageDecoder())
                                     .addLast(rpcClientMessageHandler)
                             ;
-
+                            ch.pipeline().addLast(new ChannelDuplexHandler() {
+                                @Override
+                                public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+                                    promise.addListener(future -> {
+                                        if (!future.isSuccess()) {
+                                            System.err.println("消息发送失败: " + msg);
+                                            future.cause().printStackTrace();
+                                        }
+                                    });
+                                    super.write(ctx, msg, promise);
+                                }
+                            });
                         }
                     });
             ChannelFuture cf = bootstrap.connect(host, port)
@@ -121,17 +132,17 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
     public void sendRegistrationRequest() {
         MessagePayload messagePayload = new MessagePayload()
                 .setClientId(clientId)
-                .setMessageType(MessageType.REGISTER);
+                .setMessageType(MessageTypeEnum.REGISTER);
         channel.writeAndFlush(messagePayload);
     }
 
-    public void handleRequest(MessagePayload.RpcResponse response) {
+    public void handleResponse(MessagePayload.RpcResponse response) {
         String requestId = response.getRequestId();
         CompletableFuture<MessagePayload.RpcResponse> future = requestFutureMap.get(requestId);
         future.complete(response);
     }
 
-    public void handleResponse(MessagePayload.RpcRequest request) {
+    public void handleRequest(MessagePayload.RpcRequest request) {
         Class<?> requestClazz = null;
         try {
             // interface: BookingService
@@ -173,7 +184,7 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
 
         MessagePayload response = new MessagePayload()
                 .setClientId(clientId)
-                .setMessageType(MessageType.RESPONSE)
+                .setMessageType(MessageTypeEnum.RESPONSE)
                 .setPayload(
                         new MessagePayload.RpcResponse()
                                 .setRequestId(request.getRequestId())
@@ -188,10 +199,22 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
                 Thread.currentThread().getContextClassLoader(),
                 new Class[]{clazz},
                 (proxy, method, args) -> {
+
+                    // 处理 Object 自带方法
+                    if (method.getDeclaringClass() == Object.class) {
+                        return switch (method.getName()) {
+                            case "equals" -> proxy == args[0];
+                            case "hashCode" -> System.identityHashCode(proxy);
+                            case "toString" ->
+                                    proxy.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(proxy));
+                            default -> throw new IllegalStateException("Unexpected Object method: " + method);
+                        };
+                    }
+
                     String requestId = UUID.randomUUID().toString();
                     MessagePayload msg = new MessagePayload()
                             .setClientId(clientId)
-                            .setMessageType(MessageType.CALL)
+                            .setMessageType(MessageTypeEnum.CALL)
                             .setPayload(
                                     new MessagePayload.RpcRequest()
                                             .setRequestClientId(requestClientId)
@@ -199,19 +222,27 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
                                             .setRequestMethodSimpleName(method.getName())
                                             .setRequestClassName(method.getDeclaringClass().getName())
                                             .setReturnValueType(method.getReturnType().getName())
-                                            .setParameterTypes(Arrays.stream(method.getParameterTypes()).map(Class::getSimpleName).toArray(String[]::new))
+                                            .setParameterTypes(Arrays.stream(method.getParameterTypes()).map(Class::getName).toArray(String[]::new))
                                             .setParameters(args)
                             );
 
                     CompletableFuture<MessagePayload.RpcResponse> future = new CompletableFuture<>();
                     requestFutureMap.put(requestId, future);
+
+                    log.debug("before writeAndFlush");
                     channel.writeAndFlush(msg);
+                    log.debug("after writeAndFlush: {}", msg);
 
-                    MessagePayload.RpcResponse response = future.get();
+                    try {
+                        MessagePayload.RpcResponse response = future.get(10, TimeUnit.SECONDS);
 
-                    requestFutureMap.remove(requestId);
+                        requestFutureMap.remove(requestId);
 
-                    return response;
+                        return response.getReturnValue();
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                        return "超时";
+                    }
                 }
         );
     }

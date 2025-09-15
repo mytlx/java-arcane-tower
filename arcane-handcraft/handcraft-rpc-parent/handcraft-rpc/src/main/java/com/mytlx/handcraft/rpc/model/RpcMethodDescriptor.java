@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -24,42 +24,37 @@ public class RpcMethodDescriptor {
     private String returnType;
 
     public static RpcMethodDescriptor build(Method method) {
-        List<String> parameterTypes = new ArrayList<>();
         RpcMethodDescriptor md = new RpcMethodDescriptor()
-                .setMethodId(null)
+                .setMethodId(generateMethodId(method))
                 .setClassName(method.getDeclaringClass().getName())
                 .setMethodName(method.getName())
                 .setParameterCount(method.getParameterCount())
-                .setParameterTypes(parameterTypes)
+                .setParameterTypes(Arrays.stream(method.getParameterTypes()).map(Class::getName).toList())
                 .setHasReturnValue(false)
                 .setReturnType(null);
-
-        String methodId = String.join(".", method.getName(), String.valueOf(method.getParameterCount()));
-
-        for (Class<?> type : method.getParameterTypes()) {
-            methodId = String.join(".", methodId, type.getSimpleName());
-            parameterTypes.add(type.getName());
-        }
 
         if (!method.getReturnType().equals(Void.TYPE)) {
             md.setHasReturnValue(true);
             md.setReturnType(method.getReturnType().getName());
-            methodId = String.join(".", methodId, method.getReturnType().getSimpleName());
         }
-        md.setMethodId(methodId);
 
         return md;
     }
 
-    public static String generateMethodId(String methodName, String[] parameterTypes, String returnType) {
-        String methodId = String.join(".", methodName, String.valueOf(parameterTypes.length));
+    public static String generateMethodId(Method method) {
+        String[] parameterTypes = Arrays.stream(method.getParameterTypes()).map(Class::getName).toArray(String[]::new);
+        return generateMethodId(method.getName(), parameterTypes, method.getReturnType().getName());
+    }
 
-        for (String type : parameterTypes) {
+    public static String generateMethodId(String methodName, String[] parameterTypeNames, String returnTypeName) {
+        String methodId = String.join(".", methodName, String.valueOf(parameterTypeNames.length));
+
+        for (String type : parameterTypeNames) {
             methodId = String.join(".", methodId, type);
         }
 
-        if (returnType != null) {
-            methodId = String.join(".", methodId, returnType);
+        if (returnTypeName != null) {
+            methodId = String.join(".", methodId, returnTypeName);
         }
 
         return methodId;
