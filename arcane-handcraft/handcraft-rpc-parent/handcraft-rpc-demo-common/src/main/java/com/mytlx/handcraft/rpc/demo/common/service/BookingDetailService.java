@@ -9,7 +9,7 @@ import com.mytlx.handcraft.rpc.model.RemoteService;
  */
 public interface BookingDetailService extends RemoteService {
 
-    Object getBookingByUserId(Long userId);
+    String getBookingByUserId(Long userId);
 
     Object getBookingByUserId(Long userId, String userName);
 

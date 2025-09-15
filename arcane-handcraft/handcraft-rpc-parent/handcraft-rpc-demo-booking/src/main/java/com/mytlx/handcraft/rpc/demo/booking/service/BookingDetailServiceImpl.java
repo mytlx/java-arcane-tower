@@ -1,5 +1,6 @@
 package com.mytlx.handcraft.rpc.demo.booking.service;
 
+import com.mytlx.arcane.utils.date.LocalDateTimeUtils;
 import com.mytlx.handcraft.rpc.demo.common.service.BookingDetailService;
 import com.mytlx.handcraft.rpc.model.RpcMethod;
 import org.springframework.stereotype.Component;
@@ -14,8 +15,8 @@ public class BookingDetailServiceImpl implements BookingDetailService {
 
     @RpcMethod
     @Override
-    public Object getBookingByUserId(Long userId) {
-        return "i am booking service";
+    public String getBookingByUserId(Long userId) {
+        return "i am booking service " + LocalDateTimeUtils.currentTime();
     }
 
     @Override

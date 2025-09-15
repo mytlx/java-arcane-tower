@@ -12,8 +12,10 @@ import java.lang.annotation.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Import(RpcClientRegistrar.class)
+@Import({RpcClientRegistrar.class, PostStartupProcessor.class})
 public @interface EnableRpcClient {
+
     String clientId() default "";
+
     String[] packages() default {};
 }

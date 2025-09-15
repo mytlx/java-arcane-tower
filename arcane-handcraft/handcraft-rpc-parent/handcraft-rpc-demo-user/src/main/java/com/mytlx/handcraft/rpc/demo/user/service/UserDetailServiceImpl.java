@@ -1,10 +1,9 @@
 package com.mytlx.handcraft.rpc.demo.user.service;
 
-import com.mytlx.handcraft.rpc.client.RpcClient;
+import com.mytlx.handcraft.rpc.config.AutoRemoteInjection;
 import com.mytlx.handcraft.rpc.demo.common.service.BookingDetailService;
 import com.mytlx.handcraft.rpc.demo.common.service.UserDetailService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,18 +15,23 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserDetailServiceImpl implements UserDetailService {
 
-    @Autowired
-    private RpcClient rpcClient;
+    // @Autowired
+    // private RpcClient rpcClient;
+
+    @AutoRemoteInjection(targetClientId = "demo-booking")
+    private BookingDetailService bookingDetailService;
 
     @Override
     public String checkUser() {
 
-        BookingDetailService bookingDetailService = rpcClient.getProxy(BookingDetailService.class, "demo-booking");
-        Object result = bookingDetailService.getBookingByUserId(1L);
+        // BookingDetailService bookingDetailService = rpcClient.getProxy(BookingDetailService.class, "demo-booking");
+        // Object result = bookingDetailService.getBookingByUserId(1L);
+
+        String result = bookingDetailService.getBookingByUserId(1L);
 
         log.info("UserDetailServiceImpl#checkUser result: {}", result);
 
-        return result.toString();
+        return result;
     }
 
 }
