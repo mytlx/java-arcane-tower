@@ -27,7 +27,6 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -234,60 +233,6 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
                                 .setReturnValue(result)
                 );
         channel.writeAndFlush(response);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getProxy(Class<T> clazz, String requestClientId) {
-        return (T) Proxy.newProxyInstance(
-                Thread.currentThread().getContextClassLoader(),
-                new Class[]{clazz},
-                (proxy, method, args) -> {
-
-                    // 处理 Object 自带方法
-                    if (method.getDeclaringClass() == Object.class) {
-                        return switch (method.getName()) {
-                            case "equals" -> proxy == args[0];
-                            case "hashCode" -> System.identityHashCode(proxy);
-                            case "toString" ->
-                                    proxy.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(proxy));
-                            default -> throw new IllegalStateException("Unexpected Object method: " + method);
-                        };
-                    }
-
-                    String requestId = UUID.randomUUID().toString();
-                    MessagePayload msg = new MessagePayload()
-                            .setClientId(clientId)
-                            .setMessageType(MessageTypeEnum.CALL)
-                            .setPayload(
-                                    new MessagePayload.RpcRequest()
-                                            .setRequestClientId(requestClientId)
-                                            .setRequestId(requestId)
-                                            .setRequestMethodSimpleName(method.getName())
-                                            .setRequestClassName(method.getDeclaringClass().getName())
-                                            .setReturnValueType(method.getReturnType().getName())
-                                            .setParameterTypes(Arrays.stream(method.getParameterTypes()).map(Class::getName).toArray(String[]::new))
-                                            .setParameters(args)
-                            );
-
-                    CompletableFuture<MessagePayload.RpcResponse> future = new CompletableFuture<>();
-                    requestFutureMap.put(requestId, future);
-
-                    log.debug("before writeAndFlush");
-                    channel.writeAndFlush(msg);
-                    log.debug("after writeAndFlush: {}", msg);
-
-                    try {
-                        MessagePayload.RpcResponse response = future.get(10, TimeUnit.SECONDS);
-
-                        requestFutureMap.remove(requestId);
-
-                        return response.getReturnValue();
-                    } catch (Exception e) {
-                        log.error(e.getMessage(), e);
-                        return "超时";
-                    }
-                }
-        );
     }
 
     @Override
