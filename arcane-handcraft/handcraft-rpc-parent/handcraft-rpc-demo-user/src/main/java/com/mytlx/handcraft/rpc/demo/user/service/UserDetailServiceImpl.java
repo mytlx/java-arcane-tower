@@ -4,6 +4,7 @@ import com.mytlx.handcraft.rpc.config.AutoRemoteInjection;
 import com.mytlx.handcraft.rpc.demo.common.service.BookingDetailService;
 import com.mytlx.handcraft.rpc.demo.common.service.UserDetailService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,6 +19,7 @@ public class UserDetailServiceImpl implements UserDetailService {
     // @Autowired
     // private RpcClient rpcClient;
 
+    @Autowired
     @AutoRemoteInjection(targetClientId = "demo-booking")
     private BookingDetailService bookingDetailService;
 

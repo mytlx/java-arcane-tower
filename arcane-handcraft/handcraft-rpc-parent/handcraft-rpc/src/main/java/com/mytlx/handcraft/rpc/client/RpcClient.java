@@ -170,10 +170,19 @@ public class RpcClient implements SmartInitializingSingleton, ApplicationContext
         channel.writeAndFlush(messagePayload);
     }
 
+    public void sendRequest(MessagePayload msg, String requestId, CompletableFuture<MessagePayload.RpcResponse> future) {
+        requestFutureMap.put(requestId, future);
+
+        log.debug("before writeAndFlush");
+        channel.writeAndFlush(msg);
+        log.debug("after writeAndFlush: {}", msg);
+    }
+
     public void handleResponse(MessagePayload.RpcResponse response) {
         String requestId = response.getRequestId();
         CompletableFuture<MessagePayload.RpcResponse> future = requestFutureMap.get(requestId);
         future.complete(response);
+        requestFutureMap.remove(requestId);
     }
 
     public void handleRequest(MessagePayload.RpcRequest request) {
