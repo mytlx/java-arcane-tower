@@ -1,8 +1,8 @@
 package com.mytlx.handcraft.rpc.client;
 
 import com.mytlx.handcraft.rpc.handler.ClientHeartbeatHandler;
-import com.mytlx.handcraft.rpc.handler.JsonCallMessageEncoder;
-import com.mytlx.handcraft.rpc.handler.JsonMessageDecoder;
+import com.mytlx.handcraft.rpc.handler.KryoCallMessageEncoder;
+import com.mytlx.handcraft.rpc.handler.KryoMessageDecoder;
 import com.mytlx.handcraft.rpc.handler.RpcClientMessageHandler;
 import com.mytlx.handcraft.rpc.model.MessagePayload;
 import com.mytlx.handcraft.rpc.model.MessageTypeEnum;
@@ -63,8 +63,10 @@ public class RpcClient extends AbstractRemoteClient {
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline()
                                     .addLast(new LoggingHandler())
-                                    .addLast(new JsonCallMessageEncoder())
-                                    .addLast(new JsonMessageDecoder())
+                                    // .addLast(new JsonCallMessageEncoder())
+                                    // .addLast(new JsonMessageDecoder())
+                                    .addLast(new KryoCallMessageEncoder())
+                                    .addLast(new KryoMessageDecoder())
                                     .addLast(new IdleStateHandler(0, 5, 0))
                                     .addLast(clientHeartbeatHandler)
                                     .addLast(rpcClientMessageHandler)

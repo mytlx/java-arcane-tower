@@ -1,7 +1,7 @@
 package com.mytlx.handcraft.rpc.server;
 
-import com.mytlx.handcraft.rpc.handler.JsonCallMessageEncoder;
-import com.mytlx.handcraft.rpc.handler.JsonMessageDecoder;
+import com.mytlx.handcraft.rpc.handler.KryoCallMessageEncoder;
+import com.mytlx.handcraft.rpc.handler.KryoMessageDecoder;
 import com.mytlx.handcraft.rpc.handler.RpcServerMessageHandler;
 import com.mytlx.handcraft.rpc.handler.ServerHeartbeatHandler;
 import io.netty.bootstrap.ServerBootstrap;
@@ -54,8 +54,10 @@ public class RpcServer {
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline()
                                     .addLast(new LoggingHandler())
-                                    .addLast(new JsonMessageDecoder())
-                                    .addLast(new JsonCallMessageEncoder())
+                                    // .addLast(new JsonMessageDecoder())
+                                    // .addLast(new JsonCallMessageEncoder())
+                                    .addLast(new KryoMessageDecoder())
+                                    .addLast(new KryoCallMessageEncoder())
                                     .addLast(new IdleStateHandler(10, 0, 0))
                                     .addLast(new ServerHeartbeatHandler())
                                     .addLast(new RpcServerMessageHandler())
