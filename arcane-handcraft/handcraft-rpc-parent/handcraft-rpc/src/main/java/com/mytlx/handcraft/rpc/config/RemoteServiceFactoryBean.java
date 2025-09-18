@@ -3,6 +3,7 @@ package com.mytlx.handcraft.rpc.config;
 import com.mytlx.handcraft.rpc.client.RemoteClient;
 import com.mytlx.handcraft.rpc.model.MessagePayload;
 import com.mytlx.handcraft.rpc.model.MessageTypeEnum;
+import com.mytlx.handcraft.rpc.model.RemoteService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.FactoryBean;
@@ -59,7 +60,7 @@ public class RemoteServiceFactoryBean<T> implements FactoryBean<T> {
                         return response.getReturnValue();
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
-                        if (fallbackClass != null) {
+                        if (fallbackClass != null && fallbackClass != void.class) {
                             Object fallBackBean = fallbackClass.getConstructor().newInstance();
                             return fallbackClass.getMethod(method.getName(), method.getParameterTypes())
                                     .invoke(fallBackBean, args);
@@ -76,5 +77,18 @@ public class RemoteServiceFactoryBean<T> implements FactoryBean<T> {
     @Override
     public Class<?> getObjectType() {
         return rpcInterfaceClass;
+    }
+
+    private Class<?> getRemoteRpcInterfaceClass(Class<?> targetInterface) {
+        for (Class<?> anInterface : targetInterface.getInterfaces()) {
+            if (anInterface.equals(RemoteService.class)) {
+                return targetInterface;
+            }
+            Class<?> foundCls = getRemoteRpcInterfaceClass(anInterface);
+            if (foundCls != null) {
+                return foundCls;
+            }
+        }
+        return null;
     }
 }
