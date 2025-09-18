@@ -1,22 +1,17 @@
-package com.mytlx.handcraft.rpc.demo.booking.service;
+package com.mytlx.handcraft.rpc.demo.user.service;
 
 import com.mytlx.arcane.utils.date.LocalDateTimeUtils;
 import com.mytlx.handcraft.rpc.demo.common.service.BookingDetailService;
-import com.mytlx.handcraft.rpc.model.RpcMethod;
-import org.springframework.stereotype.Component;
 
 /**
  * @author TLX
  * @version 1.0.0
- * @since 2025-09-14 0:15:58
+ * @since 2025-09-18 14:44:54
  */
-@Component
-public class BookingDetailServiceImpl implements BookingDetailService {
-
-    @RpcMethod
+public class BookingServiceFallback implements BookingDetailService {
     @Override
     public String getBookingByUserId(Long userId) {
-        return "i am booking service " + LocalDateTimeUtils.now();
+        return "fallback " + LocalDateTimeUtils.now();
     }
 
     @Override

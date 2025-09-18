@@ -16,12 +16,16 @@ public class RemoteServiceFieldHolder {
     private String targetClientId;
     private String fieldClassName;
     private String alias;
+    private Class<?> fallbackClass;
 
-    public RemoteServiceFieldHolder(Field remoteServiceField, String targetClientId) {
+    public RemoteServiceFieldHolder(Field remoteServiceField, AutoRemoteInjection annotation) {
         this.remoteServiceField = remoteServiceField;
-        this.targetClientId = targetClientId;
+        this.targetClientId = annotation.targetClientId();
         this.fieldClassName = remoteServiceField.getType().getName();
         this.alias = remoteServiceField.getName();
+        if (annotation.fallbackClass() != void.class) {
+            this.fallbackClass = annotation.fallbackClass();
+        }
     }
 
     @Override

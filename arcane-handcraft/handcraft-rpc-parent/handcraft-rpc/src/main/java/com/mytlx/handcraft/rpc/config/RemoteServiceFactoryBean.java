@@ -28,6 +28,8 @@ public class RemoteServiceFactoryBean<T> implements FactoryBean<T> {
 
     private RemoteClient remoteClient;
 
+    private Class<? extends T> fallbackClass;
+
     @SuppressWarnings("unchecked")
     @Override
     public T getObject() throws Exception {
@@ -57,6 +59,12 @@ public class RemoteServiceFactoryBean<T> implements FactoryBean<T> {
                         return response.getReturnValue();
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
+                        if (fallbackClass != null) {
+                            Object fallBackBean = fallbackClass.getConstructor().newInstance();
+                            return fallbackClass.getMethod(method.getName(), method.getParameterTypes())
+                                    .invoke(fallBackBean, args);
+
+                        }
                         return "超时";
                     } finally {
                         remoteClient.didCatchResponse(msg, requestId);

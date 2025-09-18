@@ -14,4 +14,6 @@ public @interface AutoRemoteInjection {
 
     String targetClientId() default "";
 
+    Class<?> fallbackClass() default void.class;
+
 }

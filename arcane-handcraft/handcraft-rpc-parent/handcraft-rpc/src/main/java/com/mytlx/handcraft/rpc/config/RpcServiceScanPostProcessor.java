@@ -34,8 +34,7 @@ public class RpcServiceScanPostProcessor implements BeanDefinitionRegistryPostPr
                             field.setAccessible(true);
                             AutoRemoteInjection annotation = field.getAnnotation(AutoRemoteInjection.class);
                             // 需要保存下来该 field，同一个类可能会注入多次，需要去重
-                            RemoteServiceFieldHolder fieldHolder =
-                                    new RemoteServiceFieldHolder(field, annotation.targetClientId());
+                            RemoteServiceFieldHolder fieldHolder = new RemoteServiceFieldHolder(field, annotation);
                             fieldHolderSet.add(fieldHolder);
                         }
 
@@ -58,6 +57,7 @@ public class RpcServiceScanPostProcessor implements BeanDefinitionRegistryPostPr
                 builder.addPropertyValue("rpcInterfaceClass", fieldClass);
                 builder.addPropertyValue("targetClientId", fieldHolder.getTargetClientId());
                 builder.addPropertyValue("remoteClient", new RuntimeBeanReference(RpcClient.class));
+                builder.addPropertyValue("fallbackClass", fieldHolder.getFallbackClass());
 
                 registry.registerBeanDefinition(fieldHolder.getAlias(), builder.getBeanDefinition());
             }

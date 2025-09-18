@@ -20,7 +20,7 @@ public class UserDetailServiceImpl implements UserDetailService {
     // private RpcClient rpcClient;
 
     @Autowired
-    @AutoRemoteInjection(targetClientId = "demo-booking")
+    @AutoRemoteInjection(targetClientId = "demo-booking", fallbackClass = BookingServiceFallback.class)
     private BookingDetailService bookingDetailService;
 
     @Override
