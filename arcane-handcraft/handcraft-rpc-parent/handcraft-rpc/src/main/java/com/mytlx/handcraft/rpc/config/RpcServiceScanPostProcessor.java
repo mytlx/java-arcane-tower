@@ -57,7 +57,7 @@ public class RpcServiceScanPostProcessor implements BeanDefinitionRegistryPostPr
 
                 builder.addPropertyValue("rpcInterfaceClass", fieldClass);
                 builder.addPropertyValue("targetClientId", fieldHolder.getTargetClientId());
-                builder.addPropertyValue("rpcClient", new RuntimeBeanReference(RpcClient.class));
+                builder.addPropertyValue("remoteClient", new RuntimeBeanReference(RpcClient.class));
 
                 registry.registerBeanDefinition(fieldHolder.getAlias(), builder.getBeanDefinition());
             }

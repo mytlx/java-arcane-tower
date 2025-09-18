@@ -1,6 +1,6 @@
 package com.mytlx.handcraft.rpc.config;
 
-import com.mytlx.handcraft.rpc.client.RpcClient;
+import com.mytlx.handcraft.rpc.client.RemoteClient;
 import com.mytlx.handcraft.rpc.model.MessagePayload;
 import com.mytlx.handcraft.rpc.model.MessageTypeEnum;
 import lombok.Data;
@@ -26,11 +26,7 @@ public class RemoteServiceFactoryBean<T> implements FactoryBean<T> {
 
     private Class<T> rpcInterfaceClass;
 
-    private RpcClient rpcClient;
-
-    // public RemoteServiceFactoryBean(Class<T> rpcInterfaceClass) {
-    //     this.rpcInterfaceClass = rpcInterfaceClass;
-    // }
+    private RemoteClient remoteClient;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -41,7 +37,7 @@ public class RemoteServiceFactoryBean<T> implements FactoryBean<T> {
                 (proxy, method, args) -> {
                     String requestId = UUID.randomUUID().toString();
                     MessagePayload msg = new MessagePayload()
-                            .setClientId(rpcClient.getClientId())
+                            .setClientId(remoteClient.getClientId())
                             .setMessageType(MessageTypeEnum.CALL)
                             .setPayload(
                                     new MessagePayload.RpcRequest()
@@ -55,13 +51,15 @@ public class RemoteServiceFactoryBean<T> implements FactoryBean<T> {
                             );
 
                     CompletableFuture<MessagePayload.RpcResponse> future = new CompletableFuture<>();
-                    rpcClient.sendRequest(msg, requestId, future);
+                    remoteClient.doRequest(msg, requestId, future);
                     try {
                         MessagePayload.RpcResponse response = future.get(10, TimeUnit.SECONDS);
                         return response.getReturnValue();
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
                         return "超时";
+                    } finally {
+                        remoteClient.didCatchResponse(msg, requestId);
                     }
                 }
         );
