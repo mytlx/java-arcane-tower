@@ -26,10 +26,10 @@ import java.util.Map;
  * <pre>{@code
  * // 使用 Gson 实现
  * JsonHandler jsonHandler = new GsonHandler();
- * 
+ *
  * // 使用 Jackson 实现
  * // JsonHandler jsonHandler = new JacksonHandler();
- * 
+ *
  * // 使用 Fastjson 实现
  * // JsonHandler jsonHandler = new Fastjson2Handler();
  * }</pre>
@@ -37,11 +37,11 @@ import java.util.Map;
  *
  * @author TLX
  * @version 1.0.0
- * @since 2025-09-19 11:30:24
  * @see com.mytlx.arcane.utils.json.facade.GsonHandler
  * @see com.mytlx.arcane.utils.json.facade.JacksonHandler
  * @see com.mytlx.arcane.utils.json.facade.Fastjson2Handler
  * @see JsonFacade
+ * @since 2025-09-19 11:30:24
  */
 public interface JsonHandler {
 

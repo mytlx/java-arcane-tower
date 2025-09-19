@@ -17,6 +17,8 @@ import java.util.Map;
  *
  * @author TLX
  * @version 1.0.0
+ * @see com.alibaba.fastjson2.JSON
+ * @see <a href="https://github.com/alibaba/fastjson2">Fastjson2 GitHub</a>
  * @since 2025-09-19 11:22:37
  */
 @Slf4j

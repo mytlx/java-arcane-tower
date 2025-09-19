@@ -17,6 +17,8 @@ import java.util.Map;
  *
  * @author TLX
  * @version 1.0.0
+ * @see com.google.gson.Gson
+ * @see <a href="https://github.com/google/gson">Gson GitHub</a>
  * @since 2025-02-15 14:39
  */
 @Slf4j
@@ -30,45 +32,24 @@ public class GsonUtils {
     @Getter
     private static final Gson gson;
 
+    @Getter
+    private static final Gson gsonPretty;
+
     static {
-        gson = new GsonBuilder()
+        gson = baseBuilder().create();
+        // 美化输出使用
+        gsonPretty = baseBuilder().setPrettyPrinting().create();
+    }
+
+    private static GsonBuilder baseBuilder() {
+        return new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd HH:mm:ss")
                 .serializeNulls()
                 .disableHtmlEscaping()
                 .registerTypeAdapterFactory(new ThrowableAdapterFactory())
-                .registerTypeAdapterFactory(new ReflectionTypeAdapterFactory())
-                // .registerTypeHierarchyAdapter(Throwable.class, new TypeAdapter<Throwable>() {
-                //     @Override
-                //     public void write(JsonWriter out, Throwable t) throws IOException {
-                //         if (t == null) {
-                //             out.nullValue();
-                //             return;
-                //         }
-                //         out.beginObject();
-                //         out.name("class").value(t.getClass().getName());
-                //         out.name("message").value(t.getMessage());
-                //         // stackTrace
-                //         out.name("stackTrace").beginArray();
-                //         for (StackTraceElement e : t.getStackTrace()) {
-                //             out.value(e.toString());
-                //         }
-                //         out.endArray();
-                //         // cause
-                //         if (t.getCause() != null && t.getCause() != t) {
-                //             out.name("cause");
-                //             write(out, t.getCause());
-                //         }
-                //         out.endObject();
-                //     }
-                //
-                //     @Override
-                //     public Throwable read(JsonReader in) throws IOException {
-                //         // 可以只反序列化 message 或返回 null
-                //         return null;
-                //     }
-                // })
-                .create();
+                .registerTypeAdapterFactory(new ReflectionTypeAdapterFactory());
     }
+
 
     // ---------------------- 序列化 ----------------------
 
@@ -255,68 +236,6 @@ public class GsonUtils {
         return gson.fromJson(json, type);
     }
 
-    // ---------------------- JsonElement ----------------------
-
-    /**
-     * 将 JSON 字符串转换为 {@link JsonElement}，该对象用于进一步的 JSON 操作。
-     * <p>
-     * 该方法使用 {@link Gson} 的 {@link Gson#fromJson(String, Class)} 方法将 JSON 字符串转换为 {@link JsonElement} 对象。
-     * 如果解析过程中发生错误，会记录错误日志并返回 {@code null}。
-     * </p>
-     *
-     * @param json 需要解析的 JSON 字符串，如果为 {@code null} 或空字符串则返回 {@code null}
-     * @return 解析后的 {@link JsonElement} 对象，如果解析失败或输入为 {@code null} 则返回 {@code null}
-     * @see JsonElement
-     * @see Gson#fromJson(String, Class)
-     */
-    public static JsonElement parseJson(String json) {
-        if (json == null || json.isEmpty()) return null;
-        try {
-            return gson.fromJson(json, JsonElement.class);
-        } catch (JsonSyntaxException e) {
-            log.error("json parse error, {}", json, e);
-            return null;
-        }
-    }
-
-    /**
-     * 将对象格式化为美化的 JSON 字符串
-     * <p>
-     * 该方法会将对象转换为格式化的 JSON 字符串，包含适当的缩进和换行，
-     * 使输出更易读。
-     * </p>
-     *
-     * @param object 需要格式化的对象
-     * @return 格式化后的 JSON 字符串，如果输入为 {@code null} 则返回 {@code null}
-     * @see Gson#toJson(Object)
-     */
-    public static String toPrettyJson(Object object) {
-        if (object == null) return null;
-        return gson.toJson(object); // Gson 自带的输出是美化的
-    }
-
-    /**
-     * 验证字符串是否为有效的 JSON 格式
-     * <p>
-     * 该方法会尝试将输入字符串解析为 JSON，如果解析成功则返回 {@code true}，
-     * 否则返回 {@code false}。
-     * </p>
-     *
-     * @param json 需要验证的字符串
-     * @return 如果字符串是有效的 JSON 格式则返回 {@code true}，否则返回 {@code false}
-     * @see JsonElement
-     * @see Gson#fromJson(String, Class)
-     */
-    public static boolean isValidJson(String json) {
-        if (json == null || json.isBlank()) return false;
-        try {
-            gson.fromJson(json, JsonElement.class);
-            return true;
-        } catch (JsonParseException e) {
-            return false;
-        }
-    }
-
     // ---------------------- List/Map ----------------------
 
     /**
@@ -425,4 +344,67 @@ public class GsonUtils {
         Type mapType = TypeToken.getParameterized(Map.class, keyClass, valueClass).getType();
         return gson.fromJson(json, mapType);
     }
+
+    // ---------------------- JsonElement ----------------------
+
+    /**
+     * 将 JSON 字符串转换为 {@link JsonElement}，该对象用于进一步的 JSON 操作。
+     * <p>
+     * 该方法使用 {@link Gson} 的 {@link Gson#fromJson(String, Class)} 方法将 JSON 字符串转换为 {@link JsonElement} 对象。
+     * 如果解析过程中发生错误，会记录错误日志并返回 {@code null}。
+     * </p>
+     *
+     * @param json 需要解析的 JSON 字符串，如果为 {@code null} 或空字符串则返回 {@code null}
+     * @return 解析后的 {@link JsonElement} 对象，如果解析失败或输入为 {@code null} 则返回 {@code null}
+     * @see JsonElement
+     * @see Gson#fromJson(String, Class)
+     */
+    public static JsonElement parseJson(String json) {
+        if (json == null || json.isEmpty()) return null;
+        try {
+            return gson.fromJson(json, JsonElement.class);
+        } catch (JsonSyntaxException e) {
+            log.error("json parse error, {}", json, e);
+            return null;
+        }
+    }
+
+    /**
+     * 将对象格式化为美化的 JSON 字符串
+     * <p>
+     * 该方法会将对象转换为格式化的 JSON 字符串，包含适当的缩进和换行，
+     * 使输出更易读。
+     * </p>
+     *
+     * @param object 需要格式化的对象
+     * @return 格式化后的 JSON 字符串，如果输入为 {@code null} 则返回 {@code null}
+     * @see Gson#toJson(Object)
+     */
+    public static String toPrettyJson(Object object) {
+        if (object == null) return null;
+        return gsonPretty.toJson(object);
+    }
+
+    /**
+     * 验证字符串是否为有效的 JSON 格式
+     * <p>
+     * 该方法会尝试将输入字符串解析为 JSON，如果解析成功则返回 {@code true}，
+     * 否则返回 {@code false}。
+     * </p>
+     *
+     * @param json 需要验证的字符串
+     * @return 如果字符串是有效的 JSON 格式则返回 {@code true}，否则返回 {@code false}
+     * @see JsonElement
+     * @see Gson#fromJson(String, Class)
+     */
+    public static boolean isValidJson(String json) {
+        if (json == null || json.isBlank()) return false;
+        try {
+            gson.fromJson(json, JsonElement.class);
+            return true;
+        } catch (JsonParseException e) {
+            return false;
+        }
+    }
+
 }

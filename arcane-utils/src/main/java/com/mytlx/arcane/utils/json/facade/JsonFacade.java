@@ -29,37 +29,36 @@ import java.util.Map;
  * User user = new User("张三", 25);
  *
  * // 序列化对象为 JSON 字符串
- * String json = JsonUtils.toJson(user);
+ * String json = JsonFacade.def().toJson(user);
  * // 输出: {"name":"张三","age":25}
  *
  * // 反序列化 JSON 字符串为对象
- * User user2 = JsonUtils.fromJson(json, User.class);
+ * User user2 = JsonFacade.def().fromJson(json, User.class);
  *
- * // 2. 切换 JSON 实现
- * JsonUtils.use(JsonUtils.Engine.GSON);  // 切换到 Gson 实现
+ * // 2. 使用其他 JSON 实现
+ * JsonFacade.use(JsonUtils.Engine.GSON).toJson();
+ * JsonFacade.gson().toJson();
  *
  * // 3. 处理集合类型
  * List<User> users = Arrays.asList(new User("张三", 25), new User("李四", 30));
- * String jsonArray = JsonUtils.toJson(users);
+ * String jsonArray = JsonFacade.def().toJson(users);
  *
  * // 4. 使用 OrThrow 方法（遇到错误时抛出异常）
  * try {
  *     String json = "{\"name\":\"张三\",\"age\":25}";
- *     User user = JsonUtils.fromJsonOrThrow(json, User.class);
+ *     User user = JsonFacade.def().fromJsonOrThrow(json, User.class);
  * } catch (Exception e) {
  *     // 处理异常
  * }
  *
  * // 5. 格式化输出
- * String prettyJson = JsonUtils.toPrettyJson(user);
+ * String prettyJson = JsonFacade.def().toPrettyJson(user);
  * // 输出:
  * // {
  * //   "name" : "张三",
  * //   "age" : 25
  * // }
  * }</pre>
- *
- * <p><b>线程安全：</b> 本类的方法都是线程安全的。</p>
  *
  * @author TLX
  * @version 1.0.0
@@ -75,16 +74,26 @@ public class JsonFacade {
     }
 
     private final JsonHandler handler;
+    private final Engine engine;
 
-    private JsonFacade(JsonHandler handler) {
+    private JsonFacade(JsonHandler handler, Engine engine) {
         this.handler = handler;
+        this.engine = engine;
     }
 
     // 静态单例实例
-    private static final JsonFacade JACKSON_INSTANCE = new JsonFacade(new JacksonHandler());
-    private static final JsonFacade FASTJSON2_INSTANCE = new JsonFacade(new Fastjson2Handler());
-    private static final JsonFacade GSON_INSTANCE = new JsonFacade(new GsonHandler());
+    private static final JsonFacade JACKSON_INSTANCE = new JsonFacade(new JacksonHandler(), Engine.JACKSON);
+    private static final JsonFacade FASTJSON2_INSTANCE = new JsonFacade(new Fastjson2Handler(), Engine.FASTJSON2);
+    private static final JsonFacade GSON_INSTANCE = new JsonFacade(new GsonHandler(), Engine.GSON);
 
+    // 获取当前实例对应的引擎
+    public Engine getEngine() {
+        return this.engine;
+    }
+
+    public String getEngineName() {
+        return this.engine.name();
+    }
 
     public static JsonFacade use(JsonFacade.Engine engine) {
         return switch (engine) {
@@ -94,7 +103,7 @@ public class JsonFacade {
         };
     }
 
-    public static JsonFacade def(){
+    public static JsonFacade def() {
         return JsonFacade.JACKSON_INSTANCE;
     }
 

@@ -33,8 +33,8 @@ import java.util.Map;
  * @author TLX
  * @version 1.0.0
  * @see JsonHandler
- * @see com.fasterxml.jackson.databind.ObjectMapper
- * @see <a href="https://github.com/FasterXML/jackson">Jackson GitHub</a>
+ * @see JsonFacade
+ * @see JacksonUtils
  * @since 2025-09-19 11:48:19
  */
 public class JacksonHandler implements JsonHandler {

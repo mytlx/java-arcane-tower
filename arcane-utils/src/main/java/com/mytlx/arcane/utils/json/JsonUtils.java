@@ -10,7 +10,8 @@ import java.util.Map;
 /**
  * json 工具类，默认使用 jackson
  * <p>
- * 该类作为 JSON 工具类的门面，默认使用 Jackson 作为底层实现，
+ * 该类作为 JSON 工具类的简易实现，默认使用 Jackson 作为底层实现，
+ * 如果想使用其他底层实现，请使用 {@link JsonFacade}
  * 提供了常用的 JSON 操作方法，包括对象与 JSON 字符串的相互转换、
  * 集合类型的转换以及 JSON 格式验证等功能。
  * </p>
@@ -25,10 +26,9 @@ import java.util.Map;
  * @author TLX
  * @version 1.0.0
  * @see JsonFacade
- * @see JsonFacade
- * @see com.fasterxml.jackson.databind.ObjectMapper
- * @see com.alibaba.fastjson2.JSON
- * @see com.google.gson.Gson
+ * @see com.mytlx.arcane.utils.json.jackson.JacksonUtils
+ * @see com.mytlx.arcane.utils.json.fastjson.Fastjson2Utils
+ * @see com.mytlx.arcane.utils.json.gson.GsonUtils
  * @since 2025-09-19 15:16:18
  */
 public class JsonUtils {

@@ -33,8 +33,8 @@ import java.util.Map;
  * @author TLX
  * @version 1.0.0
  * @see JsonHandler
- * @see com.google.gson.Gson
- * @see <a href="https://github.com/google/gson">Gson GitHub</a>
+ * @see JsonFacade
+ * @see GsonUtils
  * @since 2025-09-19 11:51:52
  */
 public class GsonHandler implements JsonHandler {

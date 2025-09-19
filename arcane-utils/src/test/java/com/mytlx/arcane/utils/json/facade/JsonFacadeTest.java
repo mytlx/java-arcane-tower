@@ -28,7 +28,11 @@ class JsonFacadeTest {
 
     @BeforeEach
     void setUp() {
+        // facade = JsonFacade.jackson();
+        // facade = JsonFacade.fastjson2();
         facade = JsonFacade.gson();
+
+        System.out.println("当前使用的json: " + facade.getEngineName());
 
         testUser = new User("王五", 40);
         testUser.setActive(true);
@@ -115,7 +119,7 @@ class JsonFacadeTest {
 
         assertNotNull(result);
         assertEquals(3, result.size());
-        assertEquals("a", result.get(0));
+        assertEquals("a", result.getFirst());
     }
 
     @Test
@@ -134,7 +138,7 @@ class JsonFacadeTest {
 
         assertNotNull(result);
         assertEquals(3, result.size());
-        assertEquals("a", result.get(0));
+        assertEquals("a", result.getFirst());
     }
 
     @Test
@@ -151,7 +155,7 @@ class JsonFacadeTest {
 
         assertNotNull(result);
         assertEquals(3, result.size());
-        assertEquals("a", result.get(0));
+        assertEquals("a", result.getFirst());
     }
 
     @ParameterizedTest

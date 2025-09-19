@@ -35,6 +35,8 @@ import java.util.Map;
  *
  * @author TLX
  * @version 1.0.0
+ * @see com.fasterxml.jackson.databind.ObjectMapper
+ * @see <a href="https://github.com/FasterXML/jackson">Jackson GitHub</a>
  * @since 2025-09-19 11:21:49
  */
 @Slf4j

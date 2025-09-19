@@ -33,8 +33,8 @@ import java.util.Map;
  * @author TLX
  * @version 1.0.0
  * @see JsonHandler
+ * @see JsonFacade
  * @see Fastjson2Utils
- * @see <a href="https://github.com/alibaba/fastjson2">Fastjson2 GitHub</a>
  * @since 2025-09-19 11:50:37
  */
 public class Fastjson2Handler implements JsonHandler {
