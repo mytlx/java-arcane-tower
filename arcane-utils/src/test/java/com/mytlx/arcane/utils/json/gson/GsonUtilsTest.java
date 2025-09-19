@@ -1,9 +1,8 @@
-package com.mytlx.arcane.utils.json;
+package com.mytlx.arcane.utils.json.gson;
 
 
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
-import com.mytlx.arcane.utils.json.gson.GsonUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
