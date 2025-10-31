@@ -1,0 +1,2 @@
+# 注册自动配置类
+com.mytlx.arcane.starter.rabbitmq.config.RabbitMqAutoConfiguration
